@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEWSTART 성경 빈칸 채우기</title>
+    <style>
+        /* 1. 기본 스타일 */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* 2. 메인 컨테이너 */
+        #quiz-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            position: relative;
+            width: 100%;
+        }
+
+        /* 3. 카드 영역 */
+        .card-wrapper {
+            perspective: 1000px;
+            width: 100%;
+            max-width: 500px;
+            height: 350px; /* 텍스트 양이 많아져 높이 조금 더 확보 */
+            cursor: pointer;
+            position: relative;
+        }
+
+        /* 카드 번호 표시 */
+        #card-counter {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #555;
+            background-color: #e9ecef;
+            padding: 5px 15px;
+            border-radius: 15px;
+            white-space: nowrap;
+        }
+
+        /* 4. 실제 카드 */
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .card-inner.flipped {
+            transform: rotateY(180deg);
+        }
+
+        /* 5. 앞/뒷면 공통 */
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 25px;
+            box-sizing: border-box;
+            border-radius: 15px;
+            background-color: white;
+            border: 1px solid #ddd;
+            overflow-y: auto; /* 내용 스크롤 */
+        }
+
+        .card-front {
+            z-index: 2;
+            transform: rotateY(0deg);
+        }
+        
+        .card-back {
+            transform: rotateY(180deg);
+            background-color: #f1f8ff; /* 뒷면은 약간 푸른빛 */
+        }
+
+        /* 텍스트 스타일 */
+        .question-text {
+            font-size: 1.25rem; /* 본문 크기 */
+            font-weight: 500;
+            color: #333;
+            line-height: 1.7;
+            word-break: keep-all;
+            text-align: left;
+            width: 100%;
+        }
+
+        /* 빈칸 스타일 */
+        .blank {
+            color: #d9534f;
+            font-weight: bold;
+            border-bottom: 2px solid #d9534f;
+            padding: 0 5px;
+        }
+
+        .answer-text {
+            font-size: 1.1rem;
+            color: #333;
+            line-height: 1.6;
+            word-break: keep-all;
+            text-align: left;
+            width: 100%;
+        }
+        
+        /* 정답 강조 스타일 */
+        .highlight {
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        .label {
+            font-size: 0.8rem;
+            color: #999;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+            width: 100%;
+            text-align: center;
+        }
+
+        .sub-label {
+            font-size: 1.2rem;
+            color: #007bff;
+            margin-bottom: 15px;
+            font-weight: 700;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* 버튼 컨테이너 */
+        .button-container {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        /* 6. 네비게이션 버튼 */
+        .nav-btn {
+            padding: 0;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.8rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.3s, transform 0.1s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .nav-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 7. 안내 및 완료 화면 */
+        .instructions {
+            margin-top: 30px;
+            font-size: 0.9rem;
+            color: #888;
+            background: #e9ecef;
+            padding: 8px 20px;
+            border-radius: 20px;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        #completion-message {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.5s;
+        }
+
+        #completion-message h1 {
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+
+        #restart-btn {
+            padding: 10px 20px;
+            font-size: 1rem;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .back-link {
+            margin-top: 20px;
+            color: #888;
+            text-decoration: none;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="quiz-container">
+        
+        <div class="card-wrapper" onclick="flipCard()">
+            <div id="card-counter">1 / 13</div>
+
+            <div class="card-inner" id="card-inner">
+                <div class="card-face card-front">
+                    <div class="label">Question</div>
+                    <div class="sub-label" id="q-title"></div>
+                    <div class="question-text" id="question-text"></div>
+                </div>
+                <div class="card-face card-back">
+                    <div class="label">Full Verse</div>
+                    <div class="sub-label" id="a-title"></div>
+                    <div class="answer-text" id="answer-text"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-container">
+            <button class="nav-btn" onclick="prevCard()">❮</button>
+            <button class="nav-btn" onclick="nextCard()">❯</button>
+        </div>
+
+    </div>
+
+    <div class="instructions" id="instructions">
+        카드를 터치하여 빈칸의 정답을 확인하세요.<br>
+        (앞면: 빈칸 문제, 뒷면: 전체 성경절)
+    </div>
+    
+    <a href="../index.html" class="back-link">← 포트폴리오 메인으로 돌아가기</a>
+
+    <div id="completion-message">
+        <h1>축하합니다!</h1>
+        <p>13과 암송 테스트를 완료했습니다.</p>
+        <br>
+        <button id="restart-btn" onclick="restartQuiz()">다시 하기</button>
+        <br><br>
+        <a href="../index.html" class="back-link">메인으로 나가기</a>
+    </div>
+
+    <script>
+        // ==========================================
+        // 13개 문제 데이터 (JSON)
+        // title: 과 제목 및 성경절
+        // question: 빈칸이 뚫린 텍스트
+        // answer: 전체 텍스트 (정답 확인용)
+        // ==========================================
+        const quizData = [
+            {
+                "title": "1과 (수 1:7)",
+                "question": "오직 강하고 극히 담대하여 나의 종 <span class='blank'>(     )</span>가 네게 명령한 그 <span class='blank'>(     )</span>을 다 지켜 행하고 <span class='blank'>(     )</span>로나 <span class='blank'>(     )</span>로나 치우치지 말라 그리하면 어디로 가든지 <span class='blank'>(     )</span>하리니",
+                "answer": "오직 강하고 극히 담대하여 나의 종 <span class='highlight'>모세</span>가 네게 명령한 그 <span class='highlight'>율법</span>을 다 지켜 행하고 <span class='highlight'>우</span>로나 <span class='highlight'>좌</span>로나 치우치지 말라 그리하면 어디로 가든지 <span class='highlight'>형통</span>하리니"
+            },
+            {
+                "title": "2과 (히 11:31)",
+                "question": "<span class='blank'>(     )</span>으로 기생 <span class='blank'>(     )</span>은 정탐꾼을 평안히 <span class='blank'>(     )</span>하였으므로 순종하지 아니한 자와 함께 <span class='blank'>(     )</span>하지 아니하였도다",
+                "answer": "<span class='highlight'>믿음</span>으로 기생 <span class='highlight'>라합</span>은 정탐꾼을 평안히 <span class='highlight'>영접</span>하였으므로 순종하지 아니한 자와 함께 <span class='highlight'>멸망</span>하지 아니하였도다"
+            },
+            {
+                "title": "3과 (수 4:23, 24)",
+                "question": "너희의 하나님 여호와께서 <span class='blank'>(         )</span>을 너희 앞에서 마르게 하사 너희를 건너게 하신 것이... 우리 앞에 <span class='blank'>(     )</span>를 말리시고... 이는 땅의 모든 백성에게 여호와의 <span class='blank'>(     )</span>이 강하신 것을 알게 하며...",
+                "answer": "너희의 하나님 여호와께서 <span class='highlight'>요단 물</span>을 너희 앞에서 마르게 하사 너희를 건너게 하신 것이... 우리 앞에 <span class='highlight'>홍해</span>를 말리시고... 이는 땅의 모든 백성에게 여호와의 <span class='highlight'>손</span>이 강하신 것을 알게 하며..."
+            },
+            {
+                "title": "4과 (수 10:14)",
+                "question": "여호와께서 <span class='blank'>(     )</span>의 목소리를 들으신 이같은 날은 전에도 없었고 후에도 없었나니 이는 여호와께서 <span class='blank'>(         )</span>을 위하여 <span class='blank'>(     )</span>셨음이니라",
+                "answer": "여호와께서 <span class='highlight'>사람</span>의 목소리를 들으신 이같은 날은 전에도 없었고 후에도 없었나니 이는 여호와께서 <span class='highlight'>이스라엘</span>을 위하여 <span class='highlight'>싸우</span>셨음이니라"
+            },
+            {
+                "title": "5과 (수 10:42)",
+                "question": "이스라엘의 하나님 여호와께서 이스라엘을 위하여 싸우셨으므로 <span class='blank'>(         )</span>가 이 모든 왕들과 그들의 땅을 <span class='blank'>(       )</span>에 빼앗으니라",
+                "answer": "이스라엘의 하나님 여호와께서 이스라엘을 위하여 싸우셨으므로 <span class='highlight'>여호수아</span>가 이 모든 왕들과 그들의 땅을 <span class='highlight'>단번</span>에 빼앗으니라"
+            },
+            {
+                "title": "6과 (렘 17:10)",
+                "question": "나 여호와는 <span class='blank'>(     )</span>을 살피며 <span class='blank'>(     )</span>를 시험하고 각각 그의 <span class='blank'>(     )</span>와 그의 행실대로 보응하나니",
+                "answer": "나 여호와는 <span class='highlight'>심장</span>을 살피며 <span class='highlight'>폐부</span>를 시험하고 각각 그의 <span class='highlight'>행위</span>와 그의 행실대로 보응하나니"
+            },
+            {
+                "title": "7과 (마 6:33)",
+                "question": "그런즉 너희는 먼저 그의 <span class='blank'>(     )</span>와 그의 <span class='blank'>(     )</span>를 구하라 그리하면 이 모든 것을 너희에게 <span class='blank'>(         )</span>",
+                "answer": "그런즉 너희는 먼저 그의 <span class='highlight'>나라</span>와 그의 <span class='highlight'>의</span>를 구하라 그리하면 이 모든 것을 너희에게 <span class='highlight'>더하시리라</span>"
+            },
+            {
+                "title": "8과 (히 13:7)",
+                "question": "하나님의 말씀을 너희에게 일러 주고 너희를 인도하던 자들을 <span class='blank'>(     )</span>하며 그들의 행실의 <span class='blank'>(     )</span>을 주의하여 보고 그들의 <span class='blank'>(     )</span>을 본받으라",
+                "answer": "하나님의 말씀을 너희에게 일러 주고 너희를 인도하던 자들을 <span class='highlight'>생각</span>하며 그들의 행실의 <span class='highlight'>결말</span>을 주의하여 보고 그들의 <span class='highlight'>믿음</span>을 본받으라"
+            },
+            {
+                "title": "9과 (슥 9:12)",
+                "question": "갇혀 있으나 <span class='blank'>(     )</span>을 품은 자들아 너희는 <span class='blank'>(     )</span>로 돌아올지니라 내가 오늘도 이르노라 내가 네게 <span class='blank'>(     )</span>이나 갚을 것이라",
+                "answer": "갇혀 있으나 <span class='highlight'>소망</span>을 품은 자들아 너희는 <span class='highlight'>요새</span>로 돌아올지니라 내가 오늘도 이르노라 내가 네게 <span class='highlight'>갑절</span>이나 갚을 것이라"
+            },
+            {
+                "title": "10과 (고전 10:11)",
+                "question": "그들에게 일어난 이런 일은 <span class='blank'>(       )</span>가 되고 또한 <span class='blank'>(     )</span>를 만난 우리를 깨우치기 위하여 기록되었느니라",
+                "answer": "그들에게 일어난 이런 일은 <span class='highlight'>본보기</span>가 되고 또한 <span class='highlight'>말세</span>를 만난 우리를 깨우치기 위하여 기록되었느니라"
+            },
+            {
+                "title": "11과 (잠 15:1)",
+                "question": "<span class='blank'>(       )</span> 대답은 분노를 쉬게 하여도 <span class='blank'>(       )</span> 말은 노를 격동하느니라",
+                "answer": "<span class='highlight'>유순한</span> 대답은 분노를 쉬게 하여도 <span class='highlight'>과격한</span> 말은 노를 격동하느니라"
+            },
+            {
+                "title": "12과 (수 21:45)",
+                "question": "여호와께서 이스라엘 족속에게 말씀하신 <span class='blank'>(     )</span> 말씀이 하나도 남음이 없이 다 <span class='blank'>(     )</span>하였더라",
+                "answer": "여호와께서 이스라엘 족속에게 말씀하신 <span class='highlight'>선한</span> 말씀이 하나도 남음이 없이 다 <span class='highlight'>응</span>하였더라"
+            },
+            {
+                "title": "13과 (수 24:15)",
+                "question": "너희가 섬길 자를 오늘 <span class='blank'>(     )</span>하라 오직 <span class='blank'>(           )</span>은 여호와를 <span class='blank'>(           )</span> 하니",
+                "answer": "너희가 섬길 자를 오늘 <span class='highlight'>택</span>하라 오직 <span class='highlight'>나와 내 집</span>은 여호와를 <span class='highlight'>섬기겠노라</span> 하니"
+            }
+        ];
+
+        // ==========================================
+        // 로직
+        // ==========================================
+        let currentCardIndex = 0;
+        const cardInner = document.getElementById('card-inner');
+        
+        const qTitle = document.getElementById('q-title');
+        const qText = document.getElementById('question-text');
+        
+        const aTitle = document.getElementById('a-title');
+        const aText = document.getElementById('answer-text');
+        
+        const cardCounter = document.getElementById('card-counter'); 
+        
+        const quizContainer = document.getElementById('quiz-container');
+        const instructions = document.getElementById('instructions');
+        const completionMessage = document.getElementById('completion-message');
+
+        function loadCard(index) {
+            // 카드 리셋 (항상 앞면으로)
+            cardInner.classList.remove('flipped');
+
+            // 텍스트 업데이트 (애니메이션과 싱크 맞춤)
+            setTimeout(() => {
+                const data = quizData[index];
+                
+                // 앞면 설정
+                qTitle.innerText = data.title;
+                qText.innerHTML = data.question;
+
+                // 뒷면 설정
+                aTitle.innerText = data.title;
+                aText.innerHTML = data.answer;
+                
+                // 카운터 업데이트
+                cardCounter.textContent = `${index + 1} / ${quizData.length}`;
+            }, 150);
+        }
+
+        function flipCard() {
+            cardInner.classList.toggle('flipped');
+        }
+
+        function nextCard() {
+            if (currentCardIndex < quizData.length - 1) {
+                currentCardIndex++;
+                loadCard(currentCardIndex);
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function prevCard() {
+            if (currentCardIndex > 0) {
+                currentCardIndex--;
+                loadCard(currentCardIndex);
+            }
+        }
+
+        function finishQuiz() {
+            quizContainer.style.display = 'none';
+            instructions.style.display = 'none';
+            completionMessage.style.display = 'block';
+        }
+
+        function restartQuiz() {
+            currentCardIndex = 0;
+            quizContainer.style.display = 'flex'; 
+            instructions.style.display = 'block';
+            completionMessage.style.display = 'none';
+            loadCard(0);
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (quizContainer.style.display === 'none') return;
+
+            if (event.code === 'Space') {
+                event.preventDefault();
+                flipCard();
+            } else if (event.code === 'ArrowRight' || event.code === 'Enter') {
+                event.preventDefault();
+                nextCard();
+            } else if (event.code === 'ArrowLeft') {
+                event.preventDefault();
+                prevCard();
+            }
+        });
+
+        // 초기 실행
+        loadCard(currentCardIndex);
+
+    </script>
+</body>
+</html>
