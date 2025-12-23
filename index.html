@@ -17,6 +17,8 @@
             flex-direction: column;
             padding: 20px;
             box-sizing: border-box;
+            position: relative; /* 푸터 위치 기준점 */
+            padding-bottom: 60px; /* 푸터와 겹치지 않도록 하단 여백 확보 */
         }
 
         /* 2. 메인 컨테이너 */
@@ -34,7 +36,7 @@
             perspective: 1000px;
             width: 100%;
             max-width: 500px;
-            height: 350px; /* 텍스트 양이 많아져 높이 조금 더 확보 */
+            height: 350px;
             cursor: pointer;
             position: relative;
         }
@@ -86,7 +88,7 @@
             border-radius: 15px;
             background-color: white;
             border: 1px solid #ddd;
-            overflow-y: auto; /* 내용 스크롤 */
+            overflow-y: auto;
         }
 
         .card-front {
@@ -96,12 +98,12 @@
         
         .card-back {
             transform: rotateY(180deg);
-            background-color: #f1f8ff; /* 뒷면은 약간 푸른빛 */
+            background-color: #f1f8ff;
         }
 
         /* 텍스트 스타일 */
         .question-text {
-            font-size: 1.25rem; /* 본문 크기 */
+            font-size: 1.25rem;
             font-weight: 500;
             color: #333;
             line-height: 1.7;
@@ -231,6 +233,18 @@
             text-decoration: none;
             font-size: 14px;
         }
+
+        /* [새로 추가됨] Footer 스타일 */
+        .app-footer {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #aaa;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 <body>
@@ -278,80 +292,77 @@
     </div>
     
     <div class="app-footer">
-        Distributed by Dr Choi
+        Distributed by Dr. Choi
     </div>
 
     <script>
         // ==========================================
         // 13개 문제 데이터 (JSON)
-        // title: 과 제목 및 성경절
-        // question: 빈칸이 뚫린 텍스트
-        // answer: 전체 텍스트 (정답 확인용)
         // ==========================================
         const quizData = [
             {
                 "title": "1과 (수 1:7)",
-                "question": "오직 강하고 극히 담대하여 나의 종 <span class='blank'>(     )</span>가 네게 명령한 그 <span class='blank'>(     )</span>을 다 지켜 행하고 <span class='blank'>(     )</span>로나 <span class='blank'>(     )</span>로나 치우치지 말라 그리하면 어디로 가든지 <span class='blank'>(     )</span>하리니",
+                "question": "오직 강하고 극히 담대하여 나의 종 <span class='blank'>(     )</span>가 네게 명령한 그 <span class='blank'>(     )</span>을 다 지켜 행하고 <span class='blank'>(     )</span>로나 <span class='blank'>(     )</span>로나 치우치지 말라 그리하면 어디로 가든지 <span class='blank'>(     )</span>하리니",
                 "answer": "오직 강하고 극히 담대하여 나의 종 <span class='highlight'>모세</span>가 네게 명령한 그 <span class='highlight'>율법</span>을 다 지켜 행하고 <span class='highlight'>우</span>로나 <span class='highlight'>좌</span>로나 치우치지 말라 그리하면 어디로 가든지 <span class='highlight'>형통</span>하리니"
             },
             {
                 "title": "2과 (히 11:31)",
-                "question": "<span class='blank'>(     )</span>으로 기생 <span class='blank'>(     )</span>은 정탐꾼을 평안히 <span class='blank'>(     )</span>하였으므로 순종하지 아니한 자와 함께 <span class='blank'>(     )</span>하지 아니하였도다",
+                "question": "<span class='blank'>(     )</span>으로 기생 <span class='blank'>(     )</span>은 정탐꾼을 평안히 <span class='blank'>(     )</span>하였으므로 순종하지 아니한 자와 함께 <span class='blank'>(     )</span>하지 아니하였도다",
                 "answer": "<span class='highlight'>믿음</span>으로 기생 <span class='highlight'>라합</span>은 정탐꾼을 평안히 <span class='highlight'>영접</span>하였으므로 순종하지 아니한 자와 함께 <span class='highlight'>멸망</span>하지 아니하였도다"
             },
             {
                 "title": "3과 (수 4:23, 24)",
-                "question": "너희의 하나님 여호와께서 <span class='blank'>(         )</span>을 너희 앞에서 마르게 하사 너희를 건너게 하신 것이... 우리 앞에 <span class='blank'>(     )</span>를 말리시고... 이는 땅의 모든 백성에게 여호와의 <span class='blank'>(     )</span>이 강하신 것을 알게 하며...",
+                "question": "너희의 하나님 여호와께서 <span class='blank'>(         )</span>을 너희 앞에서 마르게 하사 너희를 건너게 하신 것이... 우리 앞에 <span class='blank'>(     )</span>를 말리시고... 이는 땅의 모든 백성에게 여호와의 <span class='blank'>(     )</span>이 강하신 것을 알게 하며...",
                 "answer": "너희의 하나님 여호와께서 <span class='highlight'>요단 물</span>을 너희 앞에서 마르게 하사 너희를 건너게 하신 것이... 우리 앞에 <span class='highlight'>홍해</span>를 말리시고... 이는 땅의 모든 백성에게 여호와의 <span class='highlight'>손</span>이 강하신 것을 알게 하며..."
             },
             {
                 "title": "4과 (수 10:14)",
-                "question": "여호와께서 <span class='blank'>(     )</span>의 목소리를 들으신 이같은 날은 전에도 없었고 후에도 없었나니 이는 여호와께서 <span class='blank'>(         )</span>을 위하여 <span class='blank'>(     )</span>셨음이니라",
+                "question": "여호와께서 <span class='blank'>(     )</span>의 목소리를 들으신 이같은 날은 전에도 없었고 후에도 없었나니 이는 여호와께서 <span class='blank'>(         )</span>을 위하여 <span class='blank'>(     )</span>셨음이니라",
                 "answer": "여호와께서 <span class='highlight'>사람</span>의 목소리를 들으신 이같은 날은 전에도 없었고 후에도 없었나니 이는 여호와께서 <span class='highlight'>이스라엘</span>을 위하여 <span class='highlight'>싸우</span>셨음이니라"
             },
             {
                 "title": "5과 (수 10:42)",
-                "question": "이스라엘의 하나님 여호와께서 이스라엘을 위하여 싸우셨으므로 <span class='blank'>(         )</span>가 이 모든 왕들과 그들의 땅을 <span class='blank'>(       )</span>에 빼앗으니라",
+                "question": "이스라엘의 하나님 여호와께서 이스라엘을 위하여 싸우셨으므로 <span class='blank'>(         )</span>가 이 모든 왕들과 그들의 땅을 <span class='blank'>(        )</span>에 빼앗으니라",
                 "answer": "이스라엘의 하나님 여호와께서 이스라엘을 위하여 싸우셨으므로 <span class='highlight'>여호수아</span>가 이 모든 왕들과 그들의 땅을 <span class='highlight'>단번</span>에 빼앗으니라"
             },
             {
                 "title": "6과 (렘 17:10)",
-                "question": "나 여호와는 <span class='blank'>(     )</span>을 살피며 <span class='blank'>(     )</span>를 시험하고 각각 그의 <span class='blank'>(     )</span>와 그의 행실대로 보응하나니",
+                "question": "나 여호와는 <span class='blank'>(     )</span>을 살피며 <span class='blank'>(     )</span>를 시험하고 각각 그의 <span class='blank'>(     )</span>와 그의 행실대로 보응하나니",
                 "answer": "나 여호와는 <span class='highlight'>심장</span>을 살피며 <span class='highlight'>폐부</span>를 시험하고 각각 그의 <span class='highlight'>행위</span>와 그의 행실대로 보응하나니"
             },
             {
                 "title": "7과 (마 6:33)",
-                "question": "그런즉 너희는 먼저 그의 <span class='blank'>(     )</span>와 그의 <span class='blank'>(     )</span>를 구하라 그리하면 이 모든 것을 너희에게 <span class='blank'>(         )</span>",
+                "question": "그런즉 너희는 먼저 그의 <span class='blank'>(     )</span>와 그의 <span class='blank'>(     )</span>를 구하라 그리하면 이 모든 것을 너희에게 <span class='blank'>(         )</span>",
                 "answer": "그런즉 너희는 먼저 그의 <span class='highlight'>나라</span>와 그의 <span class='highlight'>의</span>를 구하라 그리하면 이 모든 것을 너희에게 <span class='highlight'>더하시리라</span>"
             },
             {
                 "title": "8과 (히 13:7)",
-                "question": "하나님의 말씀을 너희에게 일러 주고 너희를 인도하던 자들을 <span class='blank'>(     )</span>하며 그들의 행실의 <span class='blank'>(     )</span>을 주의하여 보고 그들의 <span class='blank'>(     )</span>을 본받으라",
+                "question": "하나님의 말씀을 너희에게 일러 주고 너희를 인도하던 자들을 <span class='blank'>(     )</span>하며 그들의 행실의 <span class='blank'>(     )</span>을 주의하여 보고 그들의 <span class='blank'>(     )</span>을 본받으라",
                 "answer": "하나님의 말씀을 너희에게 일러 주고 너희를 인도하던 자들을 <span class='highlight'>생각</span>하며 그들의 행실의 <span class='highlight'>결말</span>을 주의하여 보고 그들의 <span class='highlight'>믿음</span>을 본받으라"
             },
             {
                 "title": "9과 (슥 9:12)",
-                "question": "갇혀 있으나 <span class='blank'>(     )</span>을 품은 자들아 너희는 <span class='blank'>(     )</span>로 돌아올지니라 내가 오늘도 이르노라 내가 네게 <span class='blank'>(     )</span>이나 갚을 것이라",
+                "question": "갇혀 있으나 <span class='blank'>(     )</span>을 품은 자들아 너희는 <span class='blank'>(     )</span>로 돌아올지니라 내가 오늘도 이르노라 내가 네게 <span class='blank'>(     )</span>이나 갚을 것이라",
                 "answer": "갇혀 있으나 <span class='highlight'>소망</span>을 품은 자들아 너희는 <span class='highlight'>요새</span>로 돌아올지니라 내가 오늘도 이르노라 내가 네게 <span class='highlight'>갑절</span>이나 갚을 것이라"
             },
             {
                 "title": "10과 (고전 10:11)",
-                "question": "그들에게 일어난 이런 일은 <span class='blank'>(       )</span>가 되고 또한 <span class='blank'>(     )</span>를 만난 우리를 깨우치기 위하여 기록되었느니라",
+                "question": "그들에게 일어난 이런 일은 <span class='blank'>(        )</span>가 되고 또한 <span class='blank'>(     )</span>를 만난 우리를 깨우치기 위하여 기록되었느니라",
                 "answer": "그들에게 일어난 이런 일은 <span class='highlight'>본보기</span>가 되고 또한 <span class='highlight'>말세</span>를 만난 우리를 깨우치기 위하여 기록되었느니라"
             },
             {
                 "title": "11과 (잠 15:1)",
-                "question": "<span class='blank'>(       )</span> 대답은 분노를 쉬게 하여도 <span class='blank'>(       )</span> 말은 노를 격동하느니라",
+                "question": "<span class='blank'>(        )</span> 대답은 분노를 쉬게 하여도 <span class='blank'>(        )</span> 말은 노를 격동하느니라",
                 "answer": "<span class='highlight'>유순한</span> 대답은 분노를 쉬게 하여도 <span class='highlight'>과격한</span> 말은 노를 격동하느니라"
             },
             {
                 "title": "12과 (수 21:45)",
-                "question": "여호와께서 이스라엘 족속에게 말씀하신 <span class='blank'>(     )</span> 말씀이 하나도 남음이 없이 다 <span class='blank'>(     )</span>하였더라",
+                "question": "여호와께서 이스라엘 족속에게 말씀하신 <span class='blank'>(     )</span> 말씀이 하나도 남음이 없이 다 <span class='blank'>(     )</span>하였더라",
                 "answer": "여호와께서 이스라엘 족속에게 말씀하신 <span class='highlight'>선한</span> 말씀이 하나도 남음이 없이 다 <span class='highlight'>응</span>하였더라"
             },
             {
                 "title": "13과 (수 24:15)",
-                "question": "너희가 섬길 자를 오늘 <span class='blank'>(     )</span>하라 오직 <span class='blank'>(           )</span>은 여호와를 <span class='blank'>(           )</span> 하니",
+                "question": "너희가 섬길 자를 오늘 <span class='blank'>(     )</span>하라 오직 <span class='blank'>(            )</span>은 여호와를 <span class='blank'>(            )</span> 하니",
                 "answer": "너희가 섬길 자를 오늘 <span class='highlight'>택</span>하라 오직 <span class='highlight'>나와 내 집</span>은 여호와를 <span class='highlight'>섬기겠노라</span> 하니"
             }
         ];
@@ -450,5 +461,3 @@
     </script>
 </body>
 </html>
-
-
